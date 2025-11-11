@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SH Foods — Digital Menu</title>
+  <meta name="description" content="Scan QR to open SH Foods digital menu. Mobile-first, images, order, GST breakdown." />
+  <style>
+    /* Simple modern mobile-first design inspired by popular food apps */
+    :root{
+      --accent:#ff3b30; /* warm red */
+      --muted:#67727a;
+      --bg:#f6f7f9;
+      --card:#ffffff;
+      --glass: rgba(255,255,255,0.7);
+      --shadow: 0 6px 18px rgba(16,24,40,0.08);
+      --radius:16px;
+      --glass-blur: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#fff 0%,var(--bg) 100%);color:#0f172a}
+    header{display:flex;align-items:center;gap:12px;padding:18px;background:var(--card);box-shadow:var(--shadow);position:sticky;top:0;z-index:20}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:58px;height:58px;border-radius:12px;overflow:hidden;flex:0 0 58px;box-shadow:0 6px 18px rgba(255,59,48,0.12)}
+    .logo img{width:100%;height:100%;object-fit:cover}
+    .title{display:flex;flex-direction:column}
+    .title .name{font-weight:700;font-size:18px}
+    .title .tag{font-size:12px;color:var(--muted)}
+
+    main{max-width:1100px;margin:18px auto;padding:0 16px}
+
+    .hero{display:grid;grid-template-columns:1fr;gap:12px;align-items:center}
+    .hero-card{background:linear-gradient(180deg,rgba(255,255,255,0.9),var(--glass));padding:14px;border-radius:14px;box-shadow:var(--shadow);backdrop-filter:blur(var(--glass-blur))}
+    .hero-top{display:flex;justify-content:space-between;align-items:center}
+    .restaurant-info{display:flex;gap:14px;align-items:center}
+    .meta{font-size:13px;color:var(--muted)}
+
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .search{flex:1;min-width:160px}
+    input[type=text]{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #e6e9ee;background:#fff}
+    select,button{padding:10px 12px;border-radius:10px;border:0;background:var(--card);box-shadow:0 4px 10px rgba(12,20,30,0.04);cursor:pointer}
+    .qr-wrap{display:flex;gap:10px;align-items:center}
+    .qr{width:90px;height:90px;border-radius:10px;overflow:hidden;background:#fff;padding:6px;border:1px solid #eee}
+
+    .layout{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:14px}
+
+    /* menu list */
+    .menu{display:grid;gap:12px}
+    .category{font-weight:700;margin:6px 0}
+    .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .item{background:var(--card);border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 26px rgba(11,20,30,0.04)}
+    .item img{width:84px;height:84px;border-radius:10px;object-fit:cover;flex:0 0 84px}
+    .info{flex:1}
+    .info h4{margin:0;font-size:15px}
+    .desc{font-size:12px;color:var(--muted);margin-top:6px}
+    .price-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+    .add{background:linear-gradient(90deg,var(--accent),#ff7a5a);color:#fff;padding:8px 10px;border-radius:8px;border:none}
+
+    /* cart */
+    .cart{position:relative;background:linear-gradient(180deg,#fff, #fbfbfd);padding:14px;border-radius:14px;box-shadow:var(--shadow);height:fit-content}
+    .cart h3{margin:0 0 12px 0}
+    .cart-list{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto;padding-right:6px}
+    .cart-item{display:flex;gap:10px;align-items:center}
+    .cart-item img{width:56px;height:56px;border-radius:8px;object-fit:cover}
+    .qty{display:flex;align-items:center;gap:6px}
+    .small{font-size:13px;color:var(--muted)}
+    .totals{margin-top:12px}
+    .totals .row{display:flex;justify-content:space-between;margin:6px 0}
+    .place{width:100%;padding:12px;border-radius:10px;background:var(--accent);color:#fff;border:none;margin-top:12px}
+
+    /* modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.5);z-index:60}
+    .modal .sheet{width:min(720px,96%);background:var(--card);border-radius:14px;padding:16px}
+    .sheet .top{display:flex;gap:12px}
+    .sheet img{width:150px;height:110px;object-fit:cover;border-radius:8px}
+    .sheet h2{margin:0}
+    .sheet .ingredients{margin-top:10px;font-size:14px}
+    .breakdown{margin-top:12px;background:#fafafa;padding:10px;border-radius:10px}
+
+    footer{max-width:1100px;margin:18px auto;padding:12px 16px;color:var(--muted);font-size:13px}
+
+    /* responsive */
+    @media (max-width:900px){
+      .layout{grid-template-columns:1fr}
+      .cards{grid-template-columns:1fr 1fr}
+      .cart{order:2}
+    }
+    @media (max-width:520px){
+      .cards{grid-template-columns:1fr}
+      .hero-top{flex-direction:column;align-items:flex-start}
+      .title .name{font-size:16px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo"><img src="https://image2url.com/images/1762586591259-11e47d8e-27ee-4de9-b2ba-f2395eb824a2.png" alt="logo"></div>
+      <div class="title">
+        <div class="name">SH Foods</div>
+        <div class="tag">Authentic Indian — Scan QR to open menu</div>
+      </div>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+      <div class="meta small">Founder & Chairman: <strong>SHYAM VENAKT KUMAR KALLA</strong></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-card">
+        <div class="hero-top">
+          <div class="restaurant-info">
+            <div>
+              <div style="font-weight:800;font-size:18px">SH Foods — Andhra Pradesh</div>
+              <div class="meta">Ring Road,Vijayawada • Email: kallashyam13@gmail.com </div>
+              <div class="meta">Open: 11:00 AM — 11:00 PM</div>
+            </div>
+          </div>
+
+          <div class="qr-wrap">
+            <div style="text-align:right;font-size:12px;color:var(--muted);">Scan to open this menu</div>
+            <div class="qr" id="qrContainer"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+          <div style="max-width:65%">
+            <div style="font-weight:700">How we look</div>
+            <div class="meta">A warm, modern dining space with handcrafted decor, open kitchen and bright plating — inspired by India's regional street-food traditions.</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-weight:700">Business Vision</div>
+            <div class="meta">"SH Foods is built on creating consistent delight: quality ingredients, ethical sourcing, and community-first growth." — Shyam</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="search"><input id="search" type="text" placeholder="Search dishes or ingredients" /></div>
+          <select id="categorySelect"><option value="all">All categories</option><option>Starters</option><option>Main Course</option><option>Breads</option><option>Desserts</option><option>Drinks</option></select>
+          <button id="viewFounder">About Founder</button>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="layout">
+      <section class="menu">
+        <div class="category">Menu</div>
+        <div class="cards" id="menuCards"></div>
+      </section>
+
+      <aside class="cart">
+        <h3>Order Summary</h3>
+        <div class="cart-list" id="cartList"></div>
+        <div class="totals">
+          <div class="row"><div class="small">Subtotal</div><div id="subtotal">₹0</div></div>
+          <div class="row"><div class="small">GST</div><div id="gstAmt">₹0</div></div>
+          <div class="row"><div class="small">Packaging & Other</div><div id="otherAmt">₹0</div></div>
+          <div class="row" style="font-weight:800"><div>Total</div><div id="grandTotal">₹0</div></div>
+        </div>
+        <button class="place" id="placeOrder">Place Order</button>
+      </aside>
+    </div>
+
+    <!-- details modal -->
+    <div class="modal" id="modal">
+      <div class="sheet" role="dialog" aria-modal="true">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800">Dish details</div>
+          <button onclick="closeModal()">Close ✕</button>
+        </div>
+        <div class="top" style="margin-top:12px">
+          <img id="modalImg" src="" alt="dish">
+          <div style="flex:1;margin-left:10px">
+            <h2 id="modalTitle"></h2>
+            <div id="modalDesc" class="small desc"></div>
+            <div class="ingredients" id="modalIngredients"></div>
+            <div class="breakdown" id="priceBreakdown"></div>
+            <div style="margin-top:10px"><button id="modalAdd" class="add">Add to Cart</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    © SH Foods. Founder & Chairman: SHYAM VENAKT KUMAR KALLA. "An entrepreneur who blends tradition with disciplined execution — building a resilient brand of joy in food."
+  </footer>
+
+  <script>
+    // Sample data: 15 famous Indian dishes with images and ingredients
+    const DISHES = [
+      {
+        id:'d1',name:'Butter Chicken',category:'Main Course',price:260,
+        img:'https://www.thecookierookie.com/wp-content/uploads/2022/08/Featured-Indian-butter-chicken-1.jpg',
+        desc:'Rich creamy tomato-based curry with tender chicken pieces.',
+        ingredients:['Chicken','Tomato','Cream','Butter','Spices'],gst:5,other:10
+      },
+      {id:'d2',name:'Paneer Butter Masala',category:'Main Course',price:220,img:'https://bing.com/th?id=OSK.be402f8de9ac4c93b061e6a314f1e2c0',desc:'Soft paneer cubes cooked in velvety tomato gravy.',ingredients:['Paneer','Tomato','Butter','Cream','Spices'],gst:5,other:8},
+      {id:'d3',name:'Biryani (Hyderabadi)',category:'Main Course',price:320,img:'https://www.licious.in/blog/wp-content/uploads/2022/06/mutton-hyderabadi-biryani-01.jpg',desc:'Fragrant layered rice cooked with marinated meat and saffron.',ingredients:['Basmati Rice','Meat','Spices','Saffron'],gst:5,other:12},
+      {id:'d4',name:'Masala Dosa',category:'Starters',price:140,img:'https://bing.com/th?id=OSK.9a1c76f03099281cffd389c9183b9eaa',desc:'Crispy rice crepe stuffed with spiced potato masala.',ingredients:['Rice','Potato','Chili','Mustard seeds'],gst:5,other:5},
+      {id:'d5',name:'Chole Bhature',category:'Main Course',price:180,img:'https://as2.ftcdn.net/v2/jpg/05/53/98/35/1000_F_553983512_dcRWZkYhYXyZWId477A6z1uSxYeMBiPs.jpg',ingredients:['Chickpeas','Flour','Spices'],gst:5,other:8},
+      {id:'d6',name:'Tandoori Chicken',category:'Starters',price:300,img:'https://mapupa.com/wp-content/uploads/2024/01/Tandoori-Chicken.webp',desc:'Half<br>Smoky chicken marinated in yogurt and spices, cooked in tandoor.',ingredients:['Chicken','Yogurt','Spices'],gst:5,other:15},
+      {id:'d7',name:'Tandoori Chicken',category:'Starters',price:500,img:'https://mapupa.com/wp-content/uploads/2024/01/Tandoori-Chicken.webp',desc:'Full<br>Smoky chicken marinated in yogurt and spices, cooked in tandoor.',ingredients:['Chicken','Yogurt','Spices'],gst:5,other:15},
+      {id:'d8',name:'Rogan Josh',category:'Main Course',price:280,img:'https://th.bing.com/th/id/R.438adee7682e56785577603c6b9ed2e5?rik=4%2b8NQJCI%2fPymzQ&riu=http%3a%2f%2fcdn.shopify.com%2fs%2ffiles%2f1%2f2313%2f8987%2farticles%2fRogan_Josh_01_copy_1200x1200.jpg%3fv%3d1625548245&ehk=KohMza3cOs1j61hfZDU1htJZ9EIHS245HTE%2f5GUtQ2U%3d&risl=&pid=ImgRaw&r=0',desc:'Aromatic Kashmiri lamb curry.',ingredients:['Lamb','Yogurt','Kashmiri chilies','Spices'],gst:5,other:12},
+      {id:'d9',name:'Naan (Garlic)',category:'Breads',price:60,img:'https://www.cookwithmanali.com/wp-content/uploads/2018/09/Garlic-Naan.jpg',ingredients:['Flour','Garlic','Yeast','Butter'],gst:5,other:3},
+      {id:'d10',name:'Gulab Jamun',category:'Desserts',price:90,img:'https://bakewithzoha.com/wp-content/uploads/2023/04/gulab-jamun-3-scaled.jpg',desc:'Quantity: 6 <br>Deep-fried milk dumplings soaked in sugar syrup.',ingredients:['Milk solids','Sugar','Cardamom'],gst:5,other:2},
+      {id:'d11',name:'Samosa',category:'Starters',price:40,img:'https://th.bing.com/th/id/R.5e9d914158f20abde43751bc56170aff?rik=IVjPf86fA0ExdQ&riu=http%3a%2f%2fwww.zedamagazine.com%2fwp-content%2fuploads%2f2018%2f06%2fIndian-Food-Samosa-Dish-HD-Wallpapers.jpg&ehk=CIZsxVe5CLA%2fpZXkiCdJuoTdrhucm2fgYqo%2fkXVfHls%3d&risl=&pid=ImgRaw&r=0',desc:'Qunatity:3<br>Crispy pastry filled with spiced potatoes and peas.',ingredients:['Flour','Potato','Peas','Spices'],gst:5,other:2},
+      {id:'d12',name:'Pani Puri',category:'Starters',price:70,img:'https://www.scrumptiously.com/wp-content/uploads/2023/10/PaniPuri.webp',desc:'Quantity:10<br>Crispy hollow puris filled with tamarind water and potato.',ingredients:['Puris','Tamarind','Potato','Chutneys'],gst:5,other:3},
+      {id:'d13',name:'Rava Upma',category:'Main Course',price:120,img:'https://www.funfoodfrolic.com/wp-content/uploads/2019/06/Rava-Upma-3.jpg',desc:'Comforting semolina dish tempered with mustard and curry leaves.',ingredients:['Semolina','Mustard seeds','Vegetables'],gst:5,other:4},
+      {id:'d14',name:'Lassi (Sweet)',category:'Drinks',price:80,img:'https://someindiangirl.com/wp-content/uploads/2022/05/Sweet-Lassi-3-1024x1536.jpg',desc:'Creamy yogurt-based sweet drink.',ingredients:['Yogurt','Sugar','Cardamom'],gst:5,other:2},
+      {id:'d15',name:'Aloo Paratha',category:'Breads',price:90,img:'https://i2.wp.com/aromaticessence.co/wp-content/uploads/2017/07/IMG_1382.jpg?ssl=1',desc:'Stuffed flatbread with spiced potato filling.',ingredients:['Flour','Potato','Ghee'],gst:5,other:4},
+      {id:'d16',name:'Matar Paneer',category:'Main Course',price:210,img:'https://www.whiskaffair.com/wp-content/uploads/2020/09/Matar-Paneer-2-3-720x720.jpg',desc:'Paneer and peas cooked in a mildly spiced gravy.',ingredients:['Paneer','Peas','Tomato','Spices'],gst:5,other:9}
+    ];
+
+    // Utility functions for currency and element creation
+    const rupee = n => '₹'+Number(n).toFixed(0);
+
+    // Render menu
+    const menuCards = document.getElementById('menuCards');
+    function renderMenu(filterText='',category='all'){
+      menuCards.innerHTML='';
+      const list = DISHES.filter(d => {
+        const matchCat = category==='all' || d.category===category;
+        const matchText = (d.name+' '+d.desc+' '+d.ingredients.join(' ')).toLowerCase().includes(filterText.toLowerCase());
+        return matchCat && matchText;
+      });
+      list.forEach(d=>{
+        const el = document.createElement('div');el.className='item';
+        el.innerHTML=`
+          <img src="${d.img}" alt="${d.name}">
+          <div class="info">
+            <h4>${d.name}</h4>
+            <div class="desc">${d.desc}</div>
+            <div class="price-row"><div> ${rupee(d.price)} </div><div><button class="add" data-id="${d.id}">Add</button></div></div>
+          </div>
+        `;
+        // click to open modal
+        el.querySelector('img').addEventListener('click',()=>openModal(d.id));
+        el.querySelector('h4').addEventListener('click',()=>openModal(d.id));
+        el.querySelector('.add').addEventListener('click',()=>addToCart(d.id));
+        menuCards.appendChild(el);
+      });
+    }
+
+    // Cart management
+    let CART = JSON.parse(localStorage.getItem('ss_cart')||'{}');
+    function saveCart(){localStorage.setItem('ss_cart',JSON.stringify(CART));renderCart();}
+
+    function addToCart(id,qty=1){
+      CART[id] = CART[id] || {qty:0}; CART[id].qty += qty; saveCart();
+      const dish = DISHES.find(x=>x.id===id);
+      showToast(`${dish.name} added to cart`);
+    }
+    function removeFromCart(id){delete CART[id]; saveCart();}
+    function changeQty(id,delta){if(!CART[id]) return; CART[id].qty += delta; if(CART[id].qty<=0) delete CART[id]; saveCart();}
+
+    function renderCart(){
+      const list = document.getElementById('cartList'); list.innerHTML='';
+      let subtotal=0; let gstAmt=0; let other=0;
+      for(const id in CART){
+        const dish = DISHES.find(d=>d.id===id); if(!dish) continue;
+        const qty = CART[id].qty; const line = dish.price*qty; subtotal += line; gstAmt += (dish.gst/100)*line; other += (dish.other||0)*qty;
+        const el = document.createElement('div'); el.className='cart-item';
+        el.innerHTML = `<img src="${dish.img}" alt="${dish.name}"><div style="flex:1"><div style="font-weight:700">${dish.name}</div><div class="small">${qty} × ${rupee(dish.price)}</div></div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="qty"><button onclick="changeQty('${id}',-1)">−</button><div style="padding:6px 8px;border-radius:8px;background:#fff;border:1px solid #eee">${qty}</div><button onclick="changeQty('${id}',1)">+</button></div><button style="font-size:12px;border:0;background:transparent;color:var(--muted);cursor:pointer" onclick="removeFromCart('${id}')">Remove</button></div>`;
+        list.appendChild(el);
+      }
+      document.getElementById('subtotal').textContent = rupee(subtotal);
+      document.getElementById('gstAmt').textContent = rupee(gstAmt);
+      document.getElementById('otherAmt').textContent = rupee(other);
+      document.getElementById('grandTotal').textContent = rupee(subtotal + gstAmt + other);
+    }
+
+    // Modal / details
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+    const modalIngredients = document.getElementById('modalIngredients');
+    const priceBreakdown = document.getElementById('priceBreakdown');
+    let currentModalId = null;
+    function openModal(id){
+      const d = DISHES.find(x=>x.id===id); if(!d) return;
+      currentModalId=id; modalImg.src=d.img; modalTitle.textContent=d.name; modalDesc.textContent=d.desc;
+      modalIngredients.innerHTML = '<strong>Ingredients:</strong> ' + d.ingredients.join(', ');
+      const base = d.price; const gst = (d.gst/100)*base; const other = d.other||0; const total = base+gst+other;
+      priceBreakdown.innerHTML = `<div><strong>Price Breakdown</strong></div><div style="margin-top:8px">Base: ${rupee(base)}</div><div>GST (${d.gst}%): ${rupee(gst)}</div><div>Other charges: ${rupee(other)}</div><div style="font-weight:800;margin-top:8px">Total: ${rupee(total)}</div>`;
+      document.getElementById('modalAdd').onclick = ()=>{ addToCart(id); closeModal(); };
+      modal.style.display='flex';
+    }
+    function closeModal(){modal.style.display='none';currentModalId=null}
+
+    // small toast
+    function showToast(t){ const el = document.createElement('div'); el.style.position='fixed'; el.style.bottom='20px'; el.style.left='50%'; el.style.transform='translateX(-50%)'; el.style.background='#111'; el.style.color='#fff'; el.style.padding='8px 14px'; el.style.borderRadius='10px'; el.style.zIndex=90; el.style.opacity=0; el.style.transition='opacity .2s'; el.textContent=t; document.body.appendChild(el); requestAnimationFrame(()=>el.style.opacity=1); setTimeout(()=>{el.style.opacity=0; setTimeout(()=>el.remove(),300)},1600);
+    }
+
+    // Search and category
+    document.getElementById('search').addEventListener('input',e=>renderMenu(e.target.value,document.getElementById('categorySelect').value));
+    document.getElementById('categorySelect').addEventListener('change',e=>renderMenu(document.getElementById('search').value,e.target.value));
+
+    // View founder modal
+    document.getElementById('viewFounder').addEventListener('click',()=>{
+      alert('Founder & Chairman: SHYAM VENAKT KUMAR KALLA\n\n"A visionary restaurateur dedicated to building a resilient brand through quality, consistency and community impact."');
+    });
+
+    // Place order (simulated)
+    document.getElementById('placeOrder').addEventListener('click',()=>{
+      if(Object.keys(CART).length===0){showToast('Cart is empty');return}
+      // produce a simple order summary
+      let text='Order placed — summary:\n\n'; let total = 0; let gst=0; let other=0;
+      for(const id in CART){ const d = DISHES.find(x=>x.id===id); const qty=CART[id].qty; const line=d.price*qty; total+=line; gst+=(d.gst/100)*line; other+=(d.other||0)*qty; text += `${d.name} x${qty} — ${rupee(line)}\n`; }
+      text += `\nSubtotal: ${rupee(total)}\nGST: ${rupee(gst)}\nOther: ${rupee(other)}\nTotal: ${rupee(total+gst+other)}\n\nThank you for ordering from Sh Foods!`;
+      alert(text);
+      // clear cart
+      CART = {}; saveCart();
+    });
+
+    // Initialize
+    renderMenu(); renderCart();
+
+    // QR generator (Google Chart API) — encodes current page URL
+    const qrContainer = document.getElementById('qrContainer');
+    function genQR(){
+      const url = location.href; const src = `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(url)}`;
+      qrContainer.innerHTML = `<img src="${src}" alt="qr" style="width:100%;height:100%;object-fit:contain">`;
+    }
+    genQR();
+
+    // Add event delegation for add buttons inside dynamic content
+    document.addEventListener('click',function(e){
+      if(e.target.matches('.add[data-id]')){ const id = e.target.getAttribute('data-id'); addToCart(id); }
+    });
+
+    // Close modal on background click
+    modal.addEventListener('click', (ev)=>{ if(ev.target===modal) closeModal(); });
+
+    // Small accessibility: keyboard close
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+  </script>
+</body>
+</html>
